@@ -129,3 +129,24 @@ struct CARD CARD_LEVEL3[20] =
 	{4, 5, 0, 0, 0, 7, 0},
 	{5, 5, 0, 0, 0, 7, 3},
 };
+
+struct NOBILITY {
+	int cost_white;
+	int cost_black;
+	int cost_red;
+	int cost_blue;
+	int cost_green;
+};
+
+struct NOBILITY CARD_NOBILITY[9] =
+{
+	{0, 4, 4, 0, 0},
+	{3, 3, 3, 0, 0},
+	{4, 4, 0, 0, 0},
+	{4, 0, 0, 4, 0},
+	{3, 0, 0, 3, 3},
+	{0, 0, 0, 4, 4},
+	{0, 0, 4, 0, 4},
+	{0, 0, 3, 3, 3},
+	{3, 3, 0, 3, 0},
+};
