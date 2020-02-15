@@ -2,6 +2,7 @@
 #include<string>
 using namespace std;
 
+//宝石チップ
 int JEWELRY_WHITE = 7;
 int JEWELRY_BLACK = 7;
 int JEWELRY_RED = 7;
@@ -9,6 +10,8 @@ int JEWELRY_BLUE = 7;
 int JEWELRY_GREEN = 7;
 int JEWELRY_GOLD = 5;
 
+
+//色の情報を数で持たせるための連想配列
 map<int, string> COLOR_NUM =
 {
 	{1, "white"},
@@ -18,6 +21,7 @@ map<int, string> COLOR_NUM =
 	{5, "green"},
 };
 
+//カードの構造体
 struct CARD {
 	int point;
 	int color_num;
@@ -28,7 +32,8 @@ struct CARD {
 	int cost_green;
 };
 
-struct CARD CARD_LEVEL1[40] = 
+//レベル1のカード
+CARD CARD_LEVEL1[40] = 
 { 
 	{0, 1, 0, 1, 2, 0, 0},
 	{0, 1, 0, 0, 0, 3, 0},
@@ -72,7 +77,8 @@ struct CARD CARD_LEVEL1[40] =
 	{1, 4, 0, 4, 0, 0, 0},
 };
 
-struct CARD CARD_LEVEL2[30] = 
+//レベル2のカード
+CARD CARD_LEVEL2[30] = 
 {
 	{1, 1, 0, 2, 2, 0, 3},
 	{1, 1, 2, 0, 3, 3, 0},
@@ -106,7 +112,8 @@ struct CARD CARD_LEVEL2[30] =
 	{3, 5, 0, 0, 0, 0, 6},
 };
 
-struct CARD CARD_LEVEL3[20] =
+//レベル3のカード
+CARD CARD_LEVEL3[20] =
 {
 	{3, 1, 0, 3, 5, 3, 3},
 	{4, 1, 3, 6, 3, 0, 0},
@@ -130,6 +137,7 @@ struct CARD CARD_LEVEL3[20] =
 	{5, 5, 0, 0, 0, 7, 3},
 };
 
+//貴族の構造体
 struct NOBILITY {
 	int cost_white;
 	int cost_black;
@@ -138,7 +146,9 @@ struct NOBILITY {
 	int cost_green;
 };
 
-struct NOBILITY CARD_NOBILITY[9] =
+
+//貴族カード
+NOBILITY CARD_NOBILITY[9] =
 {
 	{0, 4, 4, 0, 0},
 	{3, 3, 3, 0, 0},
