@@ -59,23 +59,6 @@ int main() {
 	for (int i = 0; i < PLAYER_NUM; i++) {
 		PLAYERS[i] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
 	}
-	PLAYERS[2].reservation =
-	{
-		{1, "W", 0, 1, 1, 1, 1},
-	    {2, "Ba", 2, 0, 2, 2, 2},
-	    {3, "R", 3, 3, 0, 3, 3},
-	};
-	PLAYERS[1].reservation =
-	{
-		{4, "Bu", 0, 0, 4, 0, 4},
-	    {5, "Gr", 5, 5, 5, 5, 0},
-	};
-	PLAYERS[3].reservation =
-	{
-		{1, "W", 0, 1, 1, 1, 1},
-		{2, "Ba", 2, 0, 2, 2, 2},
-		{3, "R", 3, 3, 0, 3, 3},
-	};
 
 	//カードをシャッフル
 	shuffle();
@@ -83,7 +66,701 @@ int main() {
 	//ゲーム準備
 	preparation();
 
-	rendering();
+	//ゲームスタート
+	bool playing = true;
+	while (playing) {
+		for (int i = 0; i < PLAYER_NUM; i++) {
+			rendering();
+
+			//コマンド受け取り
+			int cmd;
+			cout << "コマンドを入力:";
+			cin >> cmd;
+
+			//チップ
+			if (cmd == 1) {
+				string s1, s2;
+				cin >> s1 >> s2;
+				//同じチップを二枚取るとき
+				if (s1 == s2) {
+					if (s1 == "W") {
+						JEWELRY_WHITE -= 2;
+						PLAYERS[i].jewelry_white_num += 2;
+					}else if (s1 == "Ba") {
+						JEWELRY_BLACK -= 2;
+						PLAYERS[i].jewelry_black_num += 2;
+					}else if (s1 == "R") {
+						JEWELRY_RED -= 2;
+						PLAYERS[i].jewelry_red_num += 2;
+					}else if (s1 == "Bu") {
+						JEWELRY_BLUE -= 2;
+						PLAYERS[i].jewelry_blue_num += 2;
+					}else if (s1 == "Gr") {
+						JEWELRY_GREEN -= 2;
+						PLAYERS[i].jewelry_green_num += 2;
+					}
+				}
+				//違うチップを一枚ずつ三枚取るとき
+				else {
+					string s3;
+					cin >> s3;
+					if (s1 == "W" || s2 == "W" || s3 == "W") {
+						JEWELRY_WHITE -= 1;
+						PLAYERS[i].jewelry_white_num += 1;
+					}
+					if (s1 == "Ba" || s2 == "Ba" || s3 == "Ba") {
+						JEWELRY_BLACK -= 1;
+						PLAYERS[i].jewelry_black_num += 1;
+					}
+					if (s1 == "R" || s2 == "R" || s3 == "R") {
+						JEWELRY_RED -= 1;
+						PLAYERS[i].jewelry_red_num += 1;
+					}
+					if (s1 == "Bu" || s2 == "Bu" || s3 == "Bu") {
+						JEWELRY_BLUE -= 1;
+						PLAYERS[i].jewelry_blue_num += 1;
+					}
+					if (s1 == "Gr" || s2 == "Gr" || s3 == "Gr") {
+						JEWELRY_GREEN -= 1;
+						PLAYERS[i].jewelry_green_num += 1;
+					}
+				}
+			}
+			//カード購入
+			else if (cmd == 2) {
+				int n1, n2;
+				cin >> n1 >> n2;
+				//予約から購入
+				if (n1 == 0) {
+					//コストを支払う
+					if (PLAYERS[i].reservation[n2 - 1].cost_white > 0) {
+						if (PLAYERS[i].card_white_num < PLAYERS[i].reservation[n2 - 1].cost_white) {
+							int sum_white = PLAYERS[i].card_white_num + PLAYERS[i].jewelry_white_num;
+							int cost = PLAYERS[i].reservation[n2 - 1].cost_white;
+							//goldを使わない場合
+							if (sum_white >= PLAYERS[i].reservation[n2 - 1].cost_white) {
+								cost -= PLAYERS[i].card_white_num;
+								PLAYERS[i].jewelry_white_num -= cost;
+								JEWELRY_WHITE += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_white_num;
+								int gold = cost - PLAYERS[i].jewelry_white_num;
+								JEWELRY_WHITE += PLAYERS[i].jewelry_white_num;
+								PLAYERS[i].jewelry_white_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (PLAYERS[i].reservation[n2 - 1].cost_black > 0) {
+						if (PLAYERS[i].card_black_num < PLAYERS[i].reservation[n2 - 1].cost_black) {
+							int sum_black = PLAYERS[i].card_black_num + PLAYERS[i].jewelry_black_num;
+							int cost = PLAYERS[i].reservation[n2 - 1].cost_black;
+							//goldを使わない場合
+							if (sum_black >= PLAYERS[i].reservation[n2 - 1].cost_black) {
+								cost -= PLAYERS[i].card_black_num;
+								PLAYERS[i].jewelry_black_num -= cost;
+								JEWELRY_BLACK += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_black_num;
+								int gold = cost - PLAYERS[i].jewelry_black_num;
+								JEWELRY_BLACK += PLAYERS[i].jewelry_black_num;
+								PLAYERS[i].jewelry_black_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (PLAYERS[i].reservation[n2 - 1].cost_red > 0) {
+						if (PLAYERS[i].card_red_num < PLAYERS[i].reservation[n2 - 1].cost_red) {
+							int sum_red = PLAYERS[i].card_red_num + PLAYERS[i].jewelry_red_num;
+							int cost = PLAYERS[i].reservation[n2 - 1].cost_red;
+							//goldを使わない場合
+							if (sum_red >= PLAYERS[i].reservation[n2 - 1].cost_red) {
+								cost -= PLAYERS[i].card_red_num;
+								PLAYERS[i].jewelry_red_num -= cost;
+								JEWELRY_RED += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_red_num;
+								int gold = cost - PLAYERS[i].jewelry_red_num;
+								JEWELRY_RED += PLAYERS[i].jewelry_red_num;
+								PLAYERS[i].jewelry_red_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (PLAYERS[i].reservation[n2 - 1].cost_blue > 0) {
+						if (PLAYERS[i].card_blue_num < PLAYERS[i].reservation[n2 - 1].cost_blue) {
+							int sum_blue = PLAYERS[i].card_blue_num + PLAYERS[i].jewelry_blue_num;
+							int cost = PLAYERS[i].reservation[n2 - 1].cost_blue;
+							//goldを使わない場合
+							if (sum_blue >= PLAYERS[i].reservation[n2 - 1].cost_blue) {
+								cost -= PLAYERS[i].card_blue_num;
+								PLAYERS[i].jewelry_blue_num -= cost;
+								JEWELRY_BLUE += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_blue_num;
+								int gold = cost - PLAYERS[i].jewelry_blue_num;
+								JEWELRY_BLUE += PLAYERS[i].jewelry_blue_num;
+								PLAYERS[i].jewelry_blue_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (PLAYERS[i].reservation[n2 - 1].cost_green > 0) {
+						if (PLAYERS[i].card_green_num < PLAYERS[i].reservation[n2 - 1].cost_green) {
+							int sum_green = PLAYERS[i].card_green_num + PLAYERS[i].jewelry_green_num;
+							int cost = PLAYERS[i].reservation[n2 - 1].cost_green;
+							//goldを使わない場合
+							if (sum_green >= PLAYERS[i].reservation[n2 - 1].cost_green) {
+								cost -= PLAYERS[i].card_green_num;
+								PLAYERS[i].jewelry_green_num -= cost;
+								JEWELRY_GREEN += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_green_num;
+								int gold = cost - PLAYERS[i].jewelry_green_num;
+								JEWELRY_GREEN += PLAYERS[i].jewelry_green_num;
+								PLAYERS[i].jewelry_green_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					//ポイントと宝石をゲット
+					PLAYERS[i].point += PLAYERS[i].reservation[n2 - 1].point;
+					if (PLAYERS[i].reservation[n2 - 1].color == "W") {
+						PLAYERS[i].card_white_num += 1;
+					}else if (PLAYERS[i].reservation[n2 - 1].color == "Ba") {
+						PLAYERS[i].card_black_num += 1;
+					}else if (PLAYERS[i].reservation[n2 - 1].color == "R") {
+						PLAYERS[i].card_red_num += 1;
+					}else if (PLAYERS[i].reservation[n2 - 1].color == "Bu") {
+						PLAYERS[i].card_blue_num += 1;
+					}else if (PLAYERS[i].reservation[n2 - 1].color == "Gr") {
+						PLAYERS[i].card_green_num += 1;
+					}
+					//カードの並び替え
+					for (int j = n2 - 1; j < PLAYERS[i].reservation.size() - 1; j++) {
+						PLAYERS[i].reservation[j] = PLAYERS[i].reservation[j + 1];
+					}
+					PLAYERS[i].reservation.resize(PLAYERS[i].reservation.size() - 1);
+				}
+				//レベル1のカードを購入	
+				else if (n1 == 1) {
+				    //コストを支払う
+					if (OPEN_LEVEL1[n2 - 1].cost_white > 0) {
+						if (PLAYERS[i].card_white_num < OPEN_LEVEL1[n2 - 1].cost_white) {
+							int sum_white = PLAYERS[i].card_white_num + PLAYERS[i].jewelry_white_num;
+							int cost = OPEN_LEVEL1[n2 - 1].cost_white;
+							//goldを使わない場合
+							if (sum_white >= OPEN_LEVEL1[n2 - 1].cost_white) {
+								cost -= PLAYERS[i].card_white_num;
+								PLAYERS[i].jewelry_white_num -= cost;
+								JEWELRY_WHITE += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_white_num;
+								int gold = cost - PLAYERS[i].jewelry_white_num;
+								JEWELRY_WHITE += PLAYERS[i].jewelry_white_num;
+								PLAYERS[i].jewelry_white_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL1[n2 - 1].cost_black > 0) {
+						if (PLAYERS[i].card_black_num < OPEN_LEVEL1[n2 - 1].cost_black) {
+							int sum_black = PLAYERS[i].card_black_num + PLAYERS[i].jewelry_black_num;
+							int cost = OPEN_LEVEL1[n2 - 1].cost_black;
+							//goldを使わない場合
+							if (sum_black >= OPEN_LEVEL1[n2 -1].cost_black) {
+								cost -= PLAYERS[i].card_black_num;
+								PLAYERS[i].jewelry_black_num -= cost;
+								JEWELRY_BLACK += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_black_num;
+								int gold = cost - PLAYERS[i].jewelry_black_num;
+								JEWELRY_BLACK += PLAYERS[i].jewelry_black_num;
+								PLAYERS[i].jewelry_black_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL1[n2 - 1].cost_red > 0) {
+						if (PLAYERS[i].card_red_num < OPEN_LEVEL1[n2 - 1].cost_red) {
+							int sum_red = PLAYERS[i].card_red_num + PLAYERS[i].jewelry_red_num;
+							int cost = OPEN_LEVEL1[n2 - 1].cost_red;
+							//goldを使わない場合
+							if (sum_red >= OPEN_LEVEL1[n2 - 1].cost_red) {
+								cost -= PLAYERS[i].card_red_num;
+								PLAYERS[i].jewelry_red_num -= cost;
+								JEWELRY_RED += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_red_num;
+								int gold = cost - PLAYERS[i].jewelry_red_num;
+								JEWELRY_RED += PLAYERS[i].jewelry_red_num;
+								PLAYERS[i].jewelry_red_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL1[n2 - 1].cost_blue > 0) {
+						if (PLAYERS[i].card_blue_num < OPEN_LEVEL1[n2 - 1].cost_blue) {
+							int sum_blue = PLAYERS[i].card_blue_num + PLAYERS[i].jewelry_blue_num;
+							int cost = OPEN_LEVEL1[n2 - 1].cost_blue;
+							//goldを使わない場合
+							if (sum_blue >= OPEN_LEVEL1[n2 - 1].cost_blue) {
+								cost -= PLAYERS[i].card_blue_num;
+								PLAYERS[i].jewelry_blue_num -= cost;
+								JEWELRY_BLUE += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_blue_num;
+								int gold = cost - PLAYERS[i].jewelry_blue_num;
+								JEWELRY_BLUE += PLAYERS[i].jewelry_blue_num;
+								PLAYERS[i].jewelry_blue_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL1[n2 - 1].cost_green > 0) {
+						if (PLAYERS[i].card_green_num < OPEN_LEVEL1[n2 -1].cost_green) {
+							int sum_green = PLAYERS[i].card_green_num + PLAYERS[i].jewelry_green_num;
+							int cost = OPEN_LEVEL1[n2 -1].cost_green;
+							//goldを使わない場合
+							if (sum_green >= OPEN_LEVEL1[n2 - 1].cost_green) {
+								cost -= PLAYERS[i].card_green_num;
+								PLAYERS[i].jewelry_green_num -= cost;
+								JEWELRY_GREEN += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_green_num;
+								int gold = cost - PLAYERS[i].jewelry_green_num;
+								JEWELRY_GREEN += PLAYERS[i].jewelry_green_num;
+								PLAYERS[i].jewelry_green_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					//ポイントと宝石をゲット
+					PLAYERS[i].point += OPEN_LEVEL1[n2 - 1].point;
+					if (OPEN_LEVEL1[n2 - 1].color == "W") {
+						PLAYERS[i].card_white_num += 1;
+					}else if (OPEN_LEVEL1[n2 - 1].color == "Ba") {
+						PLAYERS[i].card_black_num += 1;
+					}else if (OPEN_LEVEL1[n2 - 1].color == "R") {
+						PLAYERS[i].card_red_num += 1;
+					}else if (OPEN_LEVEL1[n2 - 1].color == "Bu") {
+						PLAYERS[i].card_blue_num += 1;
+					}else if (OPEN_LEVEL1[n2 - 1].color == "Gr") {
+						PLAYERS[i].card_green_num += 1;
+					}
+					//カードの並び替え
+					if (DECK_LEVEL1.empty()) {
+						OPEN_LEVEL1[n2 - 1].point = -1;
+					}
+					else {
+						OPEN_LEVEL1[n2 - 1] = DECK_LEVEL1.top();
+						DECK_LEVEL1.pop();
+					}
+				}
+				//レベル2のカードを購入
+				else if (n2 == 2) {
+				    //コストを支払う
+					if (OPEN_LEVEL2[n2 - 1].cost_white > 0) {
+						if (PLAYERS[i].card_white_num < OPEN_LEVEL2[n2 - 1].cost_white) {
+							int sum_white = PLAYERS[i].card_white_num + PLAYERS[i].jewelry_white_num;
+							int cost = OPEN_LEVEL2[n2 - 1].cost_white;
+							//goldを使わない場合
+							if (sum_white >= OPEN_LEVEL2[n2 - 1].cost_white) {
+								cost -= PLAYERS[i].card_white_num;
+								PLAYERS[i].jewelry_white_num -= cost;
+								JEWELRY_WHITE += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_white_num;
+								int gold = cost - PLAYERS[i].jewelry_white_num;
+								JEWELRY_WHITE += PLAYERS[i].jewelry_white_num;
+								PLAYERS[i].jewelry_white_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL2[n2 - 1].cost_black > 0) {
+						if (PLAYERS[i].card_black_num < OPEN_LEVEL2[n2 - 1].cost_black) {
+							int sum_black = PLAYERS[i].card_black_num + PLAYERS[i].jewelry_black_num;
+							int cost = OPEN_LEVEL2[n2 - 1].cost_black;
+							//goldを使わない場合
+							if (sum_black >= OPEN_LEVEL2[n2 -1].cost_black) {
+								cost -= PLAYERS[i].card_black_num;
+								PLAYERS[i].jewelry_black_num -= cost;
+								JEWELRY_BLACK += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_black_num;
+								int gold = cost - PLAYERS[i].jewelry_black_num;
+								JEWELRY_BLACK += PLAYERS[i].jewelry_black_num;
+								PLAYERS[i].jewelry_black_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL2[n2 - 1].cost_red > 0) {
+						if (PLAYERS[i].card_red_num < OPEN_LEVEL2[n2 - 1].cost_red) {
+							int sum_red = PLAYERS[i].card_red_num + PLAYERS[i].jewelry_red_num;
+							int cost = OPEN_LEVEL2[n2 - 1].cost_red;
+							//goldを使わない場合
+							if (sum_red >= OPEN_LEVEL2[n2 - 1].cost_red) {
+								cost -= PLAYERS[i].card_red_num;
+								PLAYERS[i].jewelry_red_num -= cost;
+								JEWELRY_RED += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_red_num;
+								int gold = cost - PLAYERS[i].jewelry_red_num;
+								JEWELRY_RED += PLAYERS[i].jewelry_red_num;
+								PLAYERS[i].jewelry_red_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL2[n2 - 1].cost_blue > 0) {
+						if (PLAYERS[i].card_blue_num < OPEN_LEVEL2[n2 - 1].cost_blue) {
+							int sum_blue = PLAYERS[i].card_blue_num + PLAYERS[i].jewelry_blue_num;
+							int cost = OPEN_LEVEL2[n2 - 1].cost_blue;
+							//goldを使わない場合
+							if (sum_blue >= OPEN_LEVEL2[n2 - 1].cost_blue) {
+								cost -= PLAYERS[i].card_blue_num;
+								PLAYERS[i].jewelry_blue_num -= cost;
+								JEWELRY_BLUE += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_blue_num;
+								int gold = cost - PLAYERS[i].jewelry_blue_num;
+								JEWELRY_BLUE += PLAYERS[i].jewelry_blue_num;
+								PLAYERS[i].jewelry_blue_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL2[n2 - 1].cost_green > 0) {
+						if (PLAYERS[i].card_green_num < OPEN_LEVEL2[n2 -1].cost_green) {
+							int sum_green = PLAYERS[i].card_green_num + PLAYERS[i].jewelry_green_num;
+							int cost = OPEN_LEVEL2[n2 -1].cost_green;
+							//goldを使わない場合
+							if (sum_green >= OPEN_LEVEL2[n2 - 1].cost_green) {
+								cost -= PLAYERS[i].card_green_num;
+								PLAYERS[i].jewelry_green_num -= cost;
+								JEWELRY_GREEN += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_green_num;
+								int gold = cost - PLAYERS[i].jewelry_green_num;
+								JEWELRY_GREEN += PLAYERS[i].jewelry_green_num;
+								PLAYERS[i].jewelry_green_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					//ポイントと宝石をゲット
+					PLAYERS[i].point += OPEN_LEVEL2[n2 - 1].point;
+					if (OPEN_LEVEL2[n2 - 1].color == "W") {
+						PLAYERS[i].card_white_num += 1;
+					}else if (OPEN_LEVEL2[n2 - 1].color == "Ba") {
+						PLAYERS[i].card_black_num += 1;
+					}else if (OPEN_LEVEL2[n2 - 1].color == "R") {
+						PLAYERS[i].card_red_num += 1;
+					}else if (OPEN_LEVEL2[n2 - 1].color == "Bu") {
+						PLAYERS[i].card_blue_num += 1;
+					}else if (OPEN_LEVEL2[n2 - 1].color == "Gr") {
+						PLAYERS[i].card_green_num += 1;
+					}
+					//カードの並び替え
+					if (DECK_LEVEL1.empty()) {
+						OPEN_LEVEL2[n2 - 1].point = -1;
+					}
+					else {
+						OPEN_LEVEL2[n2 - 1] = DECK_LEVEL1.top();
+						DECK_LEVEL1.pop();
+					}
+				}
+				//レベル3のカードを購入
+				else if (n2 == 3) {
+				    //コストを支払う
+					if (OPEN_LEVEL3[n2 - 1].cost_white > 0) {
+						if (PLAYERS[i].card_white_num < OPEN_LEVEL3[n2 - 1].cost_white) {
+							int sum_white = PLAYERS[i].card_white_num + PLAYERS[i].jewelry_white_num;
+							int cost = OPEN_LEVEL3[n2 - 1].cost_white;
+							//goldを使わない場合
+							if (sum_white >= OPEN_LEVEL3[n2 - 1].cost_white) {
+								cost -= PLAYERS[i].card_white_num;
+								PLAYERS[i].jewelry_white_num -= cost;
+								JEWELRY_WHITE += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_white_num;
+								int gold = cost - PLAYERS[i].jewelry_white_num;
+								JEWELRY_WHITE += PLAYERS[i].jewelry_white_num;
+								PLAYERS[i].jewelry_white_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL3[n2 - 1].cost_black > 0) {
+						if (PLAYERS[i].card_black_num < OPEN_LEVEL3[n2 - 1].cost_black) {
+							int sum_black = PLAYERS[i].card_black_num + PLAYERS[i].jewelry_black_num;
+							int cost = OPEN_LEVEL3[n2 - 1].cost_black;
+							//goldを使わない場合
+							if (sum_black >= OPEN_LEVEL2[n2 -1].cost_black) {
+								cost -= PLAYERS[i].card_black_num;
+								PLAYERS[i].jewelry_black_num -= cost;
+								JEWELRY_BLACK += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_black_num;
+								int gold = cost - PLAYERS[i].jewelry_black_num;
+								JEWELRY_BLACK += PLAYERS[i].jewelry_black_num;
+								PLAYERS[i].jewelry_black_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL3[n2 - 1].cost_red > 0) {
+						if (PLAYERS[i].card_red_num < OPEN_LEVEL3[n2 - 1].cost_red) {
+							int sum_red = PLAYERS[i].card_red_num + PLAYERS[i].jewelry_red_num;
+							int cost = OPEN_LEVEL3[n2 - 1].cost_red;
+							//goldを使わない場合
+							if (sum_red >= OPEN_LEVEL3[n2 - 1].cost_red) {
+								cost -= PLAYERS[i].card_red_num;
+								PLAYERS[i].jewelry_red_num -= cost;
+								JEWELRY_RED += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_red_num;
+								int gold = cost - PLAYERS[i].jewelry_red_num;
+								JEWELRY_RED += PLAYERS[i].jewelry_red_num;
+								PLAYERS[i].jewelry_red_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL3[n2 - 1].cost_blue > 0) {
+						if (PLAYERS[i].card_blue_num < OPEN_LEVEL3[n2 - 1].cost_blue) {
+							int sum_blue = PLAYERS[i].card_blue_num + PLAYERS[i].jewelry_blue_num;
+							int cost = OPEN_LEVEL3[n2 - 1].cost_blue;
+							//goldを使わない場合
+							if (sum_blue >= OPEN_LEVEL3[n2 - 1].cost_blue) {
+								cost -= PLAYERS[i].card_blue_num;
+								PLAYERS[i].jewelry_blue_num -= cost;
+								JEWELRY_BLUE += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_blue_num;
+								int gold = cost - PLAYERS[i].jewelry_blue_num;
+								JEWELRY_BLUE += PLAYERS[i].jewelry_blue_num;
+								PLAYERS[i].jewelry_blue_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					if (OPEN_LEVEL3[n2 - 1].cost_green > 0) {
+						if (PLAYERS[i].card_green_num < OPEN_LEVEL3[n2 -1].cost_green) {
+							int sum_green = PLAYERS[i].card_green_num + PLAYERS[i].jewelry_green_num;
+							int cost = OPEN_LEVEL3[n2 -1].cost_green;
+							//goldを使わない場合
+							if (sum_green >= OPEN_LEVEL3[n2 - 1].cost_green) {
+								cost -= PLAYERS[i].card_green_num;
+								PLAYERS[i].jewelry_green_num -= cost;
+								JEWELRY_GREEN += cost;
+							}
+							//goldを使う場合
+							else {
+								cost -= PLAYERS[i].card_green_num;
+								int gold = cost - PLAYERS[i].jewelry_green_num;
+								JEWELRY_GREEN += PLAYERS[i].jewelry_green_num;
+								PLAYERS[i].jewelry_green_num = 0;
+								JEWELRY_GOLD += gold;
+								PLAYERS[i].jewelry_gold_num -= gold;
+							}
+						}
+					}
+					//ポイントと宝石をゲット
+					PLAYERS[i].point += OPEN_LEVEL3[n2 - 1].point;
+					if (OPEN_LEVEL3[n2 - 1].color == "W") {
+						PLAYERS[i].card_white_num += 1;
+					}else if (OPEN_LEVEL3[n2 - 1].color == "Ba") {
+						PLAYERS[i].card_black_num += 1;
+					}else if (OPEN_LEVEL3[n2 - 1].color == "R") {
+						PLAYERS[i].card_red_num += 1;
+					}else if (OPEN_LEVEL3[n2 - 1].color == "Bu") {
+						PLAYERS[i].card_blue_num += 1;
+					}else if (OPEN_LEVEL3[n2 - 1].color == "Gr") {
+						PLAYERS[i].card_green_num += 1;
+					}
+					//カードの並び替え
+					if (DECK_LEVEL1.empty()) {
+						OPEN_LEVEL3[n2 - 1].point = -1;
+					}
+					else {
+						OPEN_LEVEL3[n2 - 1] = DECK_LEVEL1.top();
+						DECK_LEVEL1.pop();
+					}
+				}
+
+				//貴族カードを購入できるかチェック
+				for (int j = 0; j < OPEN_NOBILITY.size(); j++) {
+					if (OPEN_NOBILITY[j].cost_white != -1) {
+						bool can_by = true;
+						if (OPEN_NOBILITY[j].cost_white > 0) {
+							if (PLAYERS[i].card_white_num < OPEN_NOBILITY[j].cost_white) can_by = false;
+						}
+						if (OPEN_NOBILITY[j].cost_black > 0) {
+							if (PLAYERS[i].card_black_num < OPEN_NOBILITY[j].cost_black) can_by = false;
+						}
+						if (OPEN_NOBILITY[j].cost_red > 0) {
+							if (PLAYERS[i].card_red_num < OPEN_NOBILITY[j].cost_red) can_by = false;
+						}
+						if (OPEN_NOBILITY[j].cost_blue > 0) {
+							if (PLAYERS[i].card_blue_num < OPEN_NOBILITY[j].cost_blue) can_by = false;
+						}
+						if (OPEN_NOBILITY[j].cost_green > 0) {
+							if (PLAYERS[i].card_green_num < OPEN_NOBILITY[j].cost_green) can_by = false;
+						}
+						if (can_by) {
+							//ポイントをゲット	
+							PLAYERS[i].point += 3;
+							//場から削除	
+							OPEN_NOBILITY[j].cost_white = -1;
+						}
+					}
+				}
+
+				//15ポイント以上かチェック
+				if (PLAYERS[i].point >= 15) playing = false;
+			}
+			//予約
+			else if (cmd == 3) {
+			    int n1, n2;
+				cin >> n1 >> n2;
+				//レベル1から予約
+				if (n1 == 1) {
+					//山札から予約
+					if (n2 == 0) {
+						PLAYERS[i].reservation.push_back(DECK_LEVEL1.top());
+						DECK_LEVEL1.pop();
+						if (JEWELRY_GOLD > 0) {
+							PLAYERS[i].jewelry_gold_num++;
+							JEWELRY_GOLD--;
+						}
+					}
+					//場に出てるのから予約
+					else {
+						PLAYERS[i].reservation.push_back(OPEN_LEVEL1[n2 - 1]);
+						if (DECK_LEVEL1.empty()) OPEN_LEVEL1[n2 - 1].point = -1;
+						else {
+							OPEN_LEVEL1[n2 - 1] = DECK_LEVEL1.top();
+							DECK_LEVEL1.pop();
+						}
+						if (JEWELRY_GOLD > 0) {
+							PLAYERS[i].jewelry_gold_num++;
+							JEWELRY_GOLD--;
+						}
+					}
+				}
+				//レベル2から予約
+				else if (n1 == 2) {
+					//山札から予約
+					if (n2 == 0) {
+						PLAYERS[i].reservation.push_back(DECK_LEVEL2.top());
+						DECK_LEVEL2.pop();
+						if (JEWELRY_GOLD > 0) {
+							PLAYERS[i].jewelry_gold_num++;
+							JEWELRY_GOLD--;
+						}
+					}
+					//場に出てるのから予約
+					else {
+						PLAYERS[i].reservation.push_back(OPEN_LEVEL2[n2 - 1]);
+						if (DECK_LEVEL2.empty()) OPEN_LEVEL2[n2 - 1].point = -1;
+						else {
+							OPEN_LEVEL2[n2 - 1] = DECK_LEVEL2.top();
+							DECK_LEVEL2.pop();
+						}
+						if (JEWELRY_GOLD > 0) {
+							PLAYERS[i].jewelry_gold_num++;
+							JEWELRY_GOLD--;
+						}
+					}
+				}
+				//レベル3から予約
+				else if (n1 == 3) {
+					//山札から予約
+					if (n2 == 0) {
+						PLAYERS[i].reservation.push_back(DECK_LEVEL3.top());
+						DECK_LEVEL3.pop();
+						if (JEWELRY_GOLD > 0) {
+							PLAYERS[i].jewelry_gold_num++;
+							JEWELRY_GOLD--;
+						}
+					}
+					//場に出てるのから予約
+					else {
+						PLAYERS[i].reservation.push_back(OPEN_LEVEL3[n2 - 1]);
+						if (DECK_LEVEL3.empty()) OPEN_LEVEL3[n2 - 1].point = -1;
+						else {
+							OPEN_LEVEL3[n2 - 1] = DECK_LEVEL3.top();
+							DECK_LEVEL3.pop();
+						}
+						if (JEWELRY_GOLD > 0) {
+							PLAYERS[i].jewelry_gold_num++;
+							JEWELRY_GOLD--;
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 
@@ -226,7 +903,8 @@ inline void rendering() {
 	//貴族カードを表示
 	printf("                    ");
 	for (int i = 0; i < PLAYER_NUM + 1; i++) {
-		printf("_____  ");
+		if (OPEN_NOBILITY[i].cost_white == -1) printf("       ");
+		else printf("_____  ");
 	}
 	//プレイヤー1の手持ちカードの情報を取得
 	vector<queue<string>> hand1_information(PLAYERS[0].reservation.size());
@@ -287,11 +965,14 @@ inline void rendering() {
 	}
 	printf("                    ");
 	for (int i = 0; i < PLAYER_NUM + 1; i++) {
-		if (nobility_information[i].size() == 3) {
-			printf("|%s|  ", nobility_information[i].front().c_str());
-			nobility_information[i].pop();
+		if (OPEN_NOBILITY[i].cost_white == -1) printf("       ");
+		else {
+			if (nobility_information[i].size() == 3) {
+				printf("|%s|  ", nobility_information[i].front().c_str());
+				nobility_information[i].pop();
+			}
+			else printf("|   |  ");
 		}
-		else printf("|   |  ");
 	}
 	printf("                   ");
 	for (int i = 0; i < PLAYERS[0].reservation.size(); i++) {
@@ -304,8 +985,11 @@ inline void rendering() {
 	printf("\n");
 	printf("                    ");
 	for (int i = 0; i < PLAYER_NUM + 1; i++) {
-		printf("|%s|  ", nobility_information[i].front().c_str());
-		nobility_information[i].pop();
+		if (OPEN_NOBILITY[i].cost_white == -1) printf("       ");
+		else {
+			printf("|%s|  ", nobility_information[i].front().c_str());
+			nobility_information[i].pop();
+		}
 	}
 	printf("                   ");
 	for (int i = 0; i < PLAYERS[0].reservation.size(); i++) {
@@ -318,8 +1002,11 @@ inline void rendering() {
 	printf("\n");
 	printf("                    ");
 	for (int i = 0; i < PLAYER_NUM + 1; i++) {
-		printf("|%s|  ", nobility_information[i].front().c_str());
-		nobility_information[i].pop();
+		if (OPEN_NOBILITY[i].cost_white == -1) printf("       ");
+		else {
+			printf("|%s|  ", nobility_information[i].front().c_str());
+			nobility_information[i].pop();
+		}
 	}
 	printf("                   ");
 	for (int i = 0; i < PLAYERS[0].reservation.size(); i++) {
@@ -329,7 +1016,8 @@ inline void rendering() {
 	printf("\n");
 	printf("                    ");
 	for (int i = 0; i < PLAYER_NUM + 1; i++) {
-		printf("-----  ");
+		if (OPEN_NOBILITY[i].cost_white == -1) printf("       ");
+		else printf("-----  ");
 	}
 	printf("                   ");
 	for (int i = 0; i < PLAYERS[0].reservation.size(); i++) {
@@ -345,7 +1033,8 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL3.size(); i++) {
-		printf("________  ");
+		if (OPEN_LEVEL3[i].point == -1) printf("          ");
+		else printf("________  ");
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[1].reservation.size(); i++) {
@@ -360,8 +1049,11 @@ inline void rendering() {
 	}
 	//ポイントと色を表示
 	for (int i = 0; i < OPEN_LEVEL3.size(); i++) {
-		if (OPEN_LEVEL3[i].color == "W" || OPEN_LEVEL3[i].color == "R") printf("|%d    %s|  ", OPEN_LEVEL3[i].point, OPEN_LEVEL3[i].color.c_str());
-		else printf("|%d   %s|  ", OPEN_LEVEL3[i].point, OPEN_LEVEL3[i].color.c_str());
+		if (OPEN_LEVEL3[i].point == -1) printf("          ");
+		else {
+			if (OPEN_LEVEL3[i].color == "W" || OPEN_LEVEL3[i].color == "R") printf("|%d    %s|  ", OPEN_LEVEL3[i].point, OPEN_LEVEL3[i].color.c_str());
+			else printf("|%d   %s|  ", OPEN_LEVEL3[i].point, OPEN_LEVEL3[i].color.c_str());
+		}
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[1].reservation.size(); i++) {
@@ -376,7 +1068,8 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL3.size(); i++) {
-		printf("|      |  ");
+		if (OPEN_LEVEL3[i].point == -1) printf("          ");
+		else printf("|      |  ");
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[1].reservation.size(); i++) {
@@ -414,12 +1107,15 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL3.size(); i++) {
-		if (card_level3_information[i].size() == 4) {
-			printf("|%s   |  ", card_level3_information[i].front().c_str());
-			card_level3_information[i].pop();
-		}
+		if (OPEN_LEVEL3[i].point == -1) printf("          ");
 		else {
-			printf("|      |  ");
+			if (card_level3_information[i].size() == 4) {
+				printf("|%s   |  ", card_level3_information[i].front().c_str());
+				card_level3_information[i].pop();
+			}
+			else {
+				printf("|      |  ");
+			}
 		}
 	}
 	//プレイヤー2の手持ちカードの情報を取得
@@ -464,12 +1160,15 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL3.size(); i++) {
-		if (card_level3_information[i].size() == 3) {
-			printf("|%s   |  ", card_level3_information[i].front().c_str());
-			card_level3_information[i].pop();
-		}
+		if (OPEN_LEVEL3[i].point == -1) printf("          ");
 		else {
-			printf("|      |  ");
+			if (card_level3_information[i].size() == 3) {
+				printf("|%s   |  ", card_level3_information[i].front().c_str());
+				card_level3_information[i].pop();
+			}
+			else {
+				printf("|      |  ");
+			}
 		}
 	}
 	printf("             ");
@@ -490,12 +1189,15 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL3.size(); i++) {
-		if (card_level3_information[i].size() == 2) {
-			printf("|%s   |  ", card_level3_information[i].front().c_str());
-			card_level3_information[i].pop();
-		}
+		if (OPEN_LEVEL3[i].point == -1) printf("          ");
 		else {
-			printf("|      |  ");
+			if (card_level3_information[i].size() == 2) {
+				printf("|%s   |  ", card_level3_information[i].front().c_str());
+				card_level3_information[i].pop();
+			}
+			else {
+				printf("|      |  ");
+			}
 		}
 	}
 	printf("             ");
@@ -516,8 +1218,11 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL3.size(); i++) {
-		printf("|%s   |  ", card_level3_information[i].front().c_str());
-		card_level3_information[i].pop();
+		if (OPEN_LEVEL3[i].point == -1) printf("          ");
+		else {
+			printf("|%s   |  ", card_level3_information[i].front().c_str());
+			card_level3_information[i].pop();
+		}
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[1].reservation.size(); i++) {
@@ -532,7 +1237,8 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL3.size(); i++) {
-		printf("--------  ");
+		if (OPEN_LEVEL3[i].point == -1) printf("          ");
+		else printf("--------  ");
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[1].reservation.size(); i++) {
@@ -548,7 +1254,8 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL2.size(); i++) {
-		printf("________  ");
+		if (OPEN_LEVEL2[i].point == -1) printf("          ");
+		else printf("________  ");
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[2].reservation.size(); i++) {
@@ -563,8 +1270,11 @@ inline void rendering() {
 	}
 	//ポイントと色を表示
 	for (int i = 0; i < OPEN_LEVEL2.size(); i++) {
-		if (OPEN_LEVEL2[i].color == "W" || OPEN_LEVEL2[i].color == "R") printf("|%d    %s|  ", OPEN_LEVEL2[i].point, OPEN_LEVEL2[i].color.c_str());
-		else printf("|%d   %s|  ", OPEN_LEVEL2[i].point, OPEN_LEVEL2[i].color.c_str());
+		if (OPEN_LEVEL2[i].point == -1) printf("          ");
+		else {
+			if (OPEN_LEVEL2[i].color == "W" || OPEN_LEVEL2[i].color == "R") printf("|%d    %s|  ", OPEN_LEVEL2[i].point, OPEN_LEVEL2[i].color.c_str());
+			else printf("|%d   %s|  ", OPEN_LEVEL2[i].point, OPEN_LEVEL2[i].color.c_str());
+		}
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[2].reservation.size(); i++) {
@@ -579,7 +1289,8 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL2.size(); i++) {
-		printf("|      |  ");
+		if (OPEN_LEVEL2[i].point == -1) printf("          ");
+		else printf("|      |  ");
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[2].reservation.size(); i++) {
@@ -593,7 +1304,8 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL2.size(); i++) {
-		printf("|      |  ");
+		if (OPEN_LEVEL2[i].point == -1) printf("          ");
+		else printf("|      |  ");
 	}
 	//プレイヤー3の手持ちカードの情報を取得
 	vector<queue<string>> hand3_information(PLAYERS[2].reservation.size());
@@ -661,12 +1373,15 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL2.size(); i++) {
-		if (card_level2_information[i].size() == 3) {
-			printf("|%s   |  ", card_level2_information[i].front().c_str());
-			card_level2_information[i].pop();
-		}
+		if (OPEN_LEVEL2[i].point == -1) printf("          ");
 		else {
-			printf("|      |  ");
+			if (card_level2_information[i].size() == 3) {
+				printf("|%s   |  ", card_level2_information[i].front().c_str());
+				card_level2_information[i].pop();
+			}
+			else {
+				printf("|      |  ");
+			}
 		}
 	}
 	printf("             ");
@@ -687,12 +1402,15 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL2.size(); i++) {
-		if (card_level2_information[i].size() == 2) {
-			printf("|%s   |  ", card_level2_information[i].front().c_str());
-			card_level2_information[i].pop();
-		}
+		if (OPEN_LEVEL2[i].point == -1) printf("          ");
 		else {
-			printf("|      |  ");
+			if (card_level2_information[i].size() == 2) {
+				printf("|%s   |  ", card_level2_information[i].front().c_str());
+				card_level2_information[i].pop();
+			}
+			else {
+				printf("|      |  ");
+			}
 		}
 	}
 	printf("             ");
@@ -713,8 +1431,11 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL2.size(); i++) {
-		printf("|%s   |  ", card_level2_information[i].front().c_str());
-		card_level2_information[i].pop();
+		if (OPEN_LEVEL2[i].point == -1) printf("          ");
+		else {
+			printf("|%s   |  ", card_level2_information[i].front().c_str());
+			card_level2_information[i].pop();
+		}
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[2].reservation.size(); i++) {
@@ -729,7 +1450,8 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL2.size(); i++) {
-		printf("--------  ");
+		if (OPEN_LEVEL2[i].point == -1) printf("          ");
+		else printf("--------  ");
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[2].reservation.size(); i++) {
@@ -745,7 +1467,8 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL1.size(); i++) {
-		printf("________  ");
+		if (OPEN_LEVEL1[i].point == -1) printf("          ");
+		else printf("________  ");
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[3].reservation.size(); i++) {
@@ -760,8 +1483,11 @@ inline void rendering() {
 	}
 	//ポイントと色を表示
 	for (int i = 0; i < OPEN_LEVEL1.size(); i++) {
-		if (OPEN_LEVEL1[i].color == "W" || OPEN_LEVEL1[i].color == "R") printf("|%d    %s|  ", OPEN_LEVEL1[i].point, OPEN_LEVEL1[i].color.c_str());
-		else printf("|%d   %s|  ", OPEN_LEVEL1[i].point, OPEN_LEVEL1[i].color.c_str());
+		if (OPEN_LEVEL1[i].point == -1) printf("          ");
+		else {
+			if (OPEN_LEVEL1[i].color == "W" || OPEN_LEVEL1[i].color == "R") printf("|%d    %s|  ", OPEN_LEVEL1[i].point, OPEN_LEVEL1[i].color.c_str());
+			else printf("|%d   %s|  ", OPEN_LEVEL1[i].point, OPEN_LEVEL1[i].color.c_str());
+		}
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[3].reservation.size(); i++) {
@@ -776,7 +1502,8 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL1.size(); i++) {
-		printf("|      |  ");
+		if (OPEN_LEVEL1[i].point == -1) printf("          ");
+		else printf("|      |  ");
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[3].reservation.size(); i++) {
@@ -814,12 +1541,15 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL1.size(); i++) {
-		if (card_level1_information[i].size() == 4) {
-			printf("|%s   |  ", card_level1_information[i].front().c_str());
-			card_level1_information[i].pop();
-		}
+		if (OPEN_LEVEL1[i].point == -1) printf("          ");
 		else {
-			printf("|      |  ");
+			if (card_level1_information[i].size() == 4) {
+				printf("|%s   |  ", card_level1_information[i].front().c_str());
+				card_level1_information[i].pop();
+			}
+			else {
+				printf("|      |  ");
+			}
 		}
 	}
 	//プレイヤー4の手持ちカードの情報を取得
@@ -864,12 +1594,15 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL1.size(); i++) {
-		if (card_level1_information[i].size() == 3) {
-			printf("|%s   |  ", card_level1_information[i].front().c_str());
-			card_level1_information[i].pop();
-		}
+		if (OPEN_LEVEL1[i].point == -1) printf("          ");
 		else {
-			printf("|      |  ");
+			if (card_level1_information[i].size() == 3) {
+				printf("|%s   |  ", card_level1_information[i].front().c_str());
+				card_level1_information[i].pop();
+			}
+			else {
+				printf("|      |  ");
+			}
 		}
 	}
 	printf("             ");
@@ -890,12 +1623,15 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL1.size(); i++) {
-		if (card_level1_information[i].size() == 2) {
-			printf("|%s   |  ", card_level1_information[i].front().c_str());
-			card_level1_information[i].pop();
-		}
+		if (OPEN_LEVEL1[i].point == -1) printf("          ");
 		else {
-			printf("|      |  ");
+			if (card_level1_information[i].size() == 2) {
+				printf("|%s   |  ", card_level1_information[i].front().c_str());
+				card_level1_information[i].pop();
+			}
+			else {
+				printf("|      |  ");
+			}
 		}
 	}
 	printf("             ");
@@ -916,8 +1652,11 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL1.size(); i++) {
-		printf("|%s   |  ", card_level1_information[i].front().c_str());
-		card_level1_information[i].pop();
+		if (OPEN_LEVEL1[i].point == -1) printf("          ");
+		else {
+			printf("|%s   |  ", card_level1_information[i].front().c_str());
+			card_level1_information[i].pop();
+		}
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[3].reservation.size(); i++) {
@@ -932,7 +1671,8 @@ inline void rendering() {
 		printf("                     ");
 	}
 	for (int i = 0; i < OPEN_LEVEL1.size(); i++) {
-		printf("--------  ");
+		if (OPEN_LEVEL1[i].point == -1) printf("          ");
+		else printf("--------  ");
 	}
 	printf("             ");
 	for (int i = 0; i < PLAYERS[3].reservation.size(); i++) {
@@ -957,5 +1697,6 @@ inline void rendering() {
 	for (int i = 0; i < PLAYER_NUM; i++) {
 		printf("card: W%d  Ba%d  R%d  Bu%d  Gr%d         ", PLAYERS[i].card_white_num, PLAYERS[i].card_black_num, PLAYERS[i].card_red_num, PLAYERS[i].card_blue_num, PLAYERS[i].card_green_num);
 	}
+	printf("\n");
 	printf("\n");
 }
